@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Generador de Reportes en PDF</title>
+  <title>Generador de Reportes PDF</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -83,33 +83,42 @@
       document.getElementById("resultado").innerHTML = "Generando PDF...";
 
       try {
-        const respuesta = await fetch(
-          "https://script.google.com/macros/s/AKfycbzViLN35lkBMYmI85Hz5O5YgOHKZDS3VZuCwSJZCmt-a_IXyLkq1bHXBhp73Wu3M3g/exec",
-          {
-            method: "POST",
-            body: JSON.stringify(datos),
-            headers: { "Content-Type": "application/json" },
-          }
-        );
+        const respuesta = await fetch("https://script.google.com/macros/s/AKfycbzCedoDft4MhrNHDT4L-aa3bKHwUIcCD5qgNlYkq1YR1wB3ud8i4sDgftdukSnUEg9b/exec", {
+          method: "POST",
+          body: JSON.stringify(datos),
+          headers: { "Content-Type": "application/json" },
+        });
 
-        const resultado = await respuesta.json();
+        const textoRespuesta = await respuesta.text();
+        console.log("Respuesta cruda:", textoRespuesta);
+
+        let resultado;
+        try {
+          resultado = JSON.parse(textoRespuesta);
+        } catch {
+          document.getElementById("resultado").innerHTML =
+            `<p>⚠️ La respuesta no es JSON válida. Revisa la consola del navegador (F12 > Consola).</p>`;
+          console.error("Respuesta no es JSON válida:", textoRespuesta);
+          return;
+        }
 
         if (resultado.url) {
-          document.getElementById(
-            "resultado"
-          ).innerHTML = `<p>Reporte generado con éxito.</p>
-            <a href="${resultado.url}" target="_blank">📄 Descargar PDF</a>`;
+          document.getElementById("resultado").innerHTML = `
+            <p>✅ Reporte generado con éxito.</p>
+            <a href="${resultado.url}" target="_blank">📄 Descargar PDF</a>
+          `;
         } else {
-          document.getElementById(
-            "resultado"
-          ).innerHTML = `<p>Error al generar el reporte: ${resultado.error}</p>`;
-          console.error(resultado.error);
+          document.getElementById("resultado").innerHTML = `
+            <p>❌ Error al generar el reporte: ${resultado.error}</p>
+          `;
+          console.error("Error:", resultado.error);
         }
+
       } catch (error) {
-        document.getElementById(
-          "resultado"
-        ).innerHTML = `<p>Error inesperado: ${error.message}</p>`;
-        console.error(error);
+        document.getElementById("resultado").innerHTML = `
+          <p>❌ Error inesperado: ${error.message}</p>
+        `;
+        console.error("Error inesperado:", error);
       }
     }
   </script>
