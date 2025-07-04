@@ -1,76 +1,108 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <title>Generador de Reportes PDF</title>
+  <meta charset="UTF-8">
+  <title>Generador de Reportes en PDF</title>
   <style>
-    body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px; }
-    .container { max-width: 400px; background: white; padding: 20px; border-radius: 8px; margin: auto; box-shadow: 0 0 8px rgba(0,0,0,0.1); }
-    label { display: block; margin-top: 15px; }
-    input, select, button { width: 100%; padding: 8px; margin-top: 5px; }
-    button { background: #0073e6; color: white; border: none; cursor: pointer; }
-    button:hover { background: #005bb5; }
-    #resultado { margin-top: 20px; }
+    body {
+      font-family: Arial, sans-serif;
+      padding: 2rem;
+      max-width: 600px;
+      margin: auto;
+    }
+    label {
+      display: block;
+      margin-top: 1rem;
+    }
+    input, select {
+      width: 100%;
+      padding: 0.5rem;
+      margin-top: 0.3rem;
+    }
+    button {
+      margin-top: 2rem;
+      padding: 0.7rem;
+      width: 100%;
+      background-color: #4CAF50;
+      color: white;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+    }
+    #resultado {
+      margin-top: 2rem;
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2>Generar Reporte PDF</h2>
-    <form id="reporteForm">
-      <label>Desde:
-        <input type="date" name="desde" required />
-      </label>
-      <label>Hasta:
-        <input type="date" name="hasta" required />
-      </label>
-      <label>Chofer:
-        <select name="chofer" required>
-          <option value="">-- Seleccionar --</option>
-          <option value="Torres Miguel">Torres Miguel</option>
-          <option value="Ruiz Walter">Ruiz Walter</option>
-          <option value="González Gerardo">González Gerardo</option>
-        </select>
-      </label>
-      <label>Empresa:
-        <select name="empresa" required>
-          <option value="">-- Seleccionar --</option>
-          <option value="LEMAN">LEMAN</option>
-          <option value="BRASSIOLO">BRASSIOLO</option>
-          <option value="CONSORCIO">CONSORCIO</option>
-        </select>
-      </label>
-      <button type="submit">Generar Reporte</button>
-    </form>
-    <div id="resultado"></div>
-  </div>
+  <h1>Generador de Reportes</h1>
+
+  <label for="desde">Desde:</label>
+  <input type="date" id="desde" required>
+
+  <label for="hasta">Hasta:</label>
+  <input type="date" id="hasta" required>
+
+  <label for="chofer">Chofer:</label>
+  <select id="chofer">
+    <option value="">-- Todos --</option>
+    <option value="Torres Miguel">Torres Miguel</option>
+    <option value="Ruiz Walter">Ruiz Walter</option>
+    <option value="González Gerardo">González Gerardo</option>
+  </select>
+
+  <label for="empresa">Empresa:</label>
+  <select id="empresa">
+    <option value="">-- Todas --</option>
+    <option value="LEMAN">LEMAN</option>
+    <option value="BRASSIOLO">BRASSIOLO</option>
+    <option value="CONSORCIO">CONSORCIO</option>
+  </select>
+
+  <button onclick="generarReporte()">Generar Reporte</button>
+
+  <div id="resultado"></div>
 
   <script>
-    document.getElementById("reporteForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const params = Object.fromEntries(new FormData(e.target).entries());
+    async function generarReporte() {
+      const desde = document.getElementById('desde').value;
+      const hasta = document.getElementById('hasta').value;
+      const chofer = document.getElementById('chofer').value;
+      const empresa = document.getElementById('empresa').value;
+
+      if (!desde || !hasta) {
+        alert("Por favor seleccioná el rango de fechas.");
+        return;
+      }
+
+      const datos = { desde, hasta, chofer, empresa };
+
+      document.getElementById("resultado").innerHTML = "Generando PDF...";
 
       try {
-        const res = await fetch("https://script.google.com/macros/s/AKfycbzViLN35lkBMYmI85Hz5O5YgOHKZDS3VZuCwSJZCmt-a_IXyLkq1bHXBhp73Wu3M3g/exec", {
+        const respuesta = await fetch("https://script.google.com/macros/s/AKfycbzViLN35lkBMYmI85Hz5O5YgOHKZDS3VZuCwSJZCmt-a_IXyLkq1bHXBhp73Wu3M3g/exec", {
           method: "POST",
+          body: JSON.stringify(datos),
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(params)
         });
 
-        if (!res.ok) throw new Error("Error en la respuesta HTTP");
+        const resultado = await respuesta.json();
 
-        const data = await res.json();
-
-        if (data.error) throw new Error(data.error);
-
-        document.getElementById("resultado").innerHTML =
-          `<a href="${data.url}" target="_blank" rel="noopener noreferrer" download>📄 Descargar PDF</a>`;
+        if (resultado.url) {
+          document.getElementById("resultado").innerHTML = `
+            <p>Reporte generado con éxito.</p>
+            <a href="${resultado.url}" target="_blank">📄 Descargar PDF</a>
+          `;
+        } else {
+          document.getElementById("resultado").innerHTML = `<p>Error al generar el reporte: ${resultado.error}</p>`;
+          console.error(resultado.error);
+        }
 
       } catch (error) {
-        document.getElementById("resultado").textContent =
-          "Error al generar el reporte. Revisá la consola para más detalles.";
+        document.getElementById("resultado").innerHTML = `<p>Error inesperado: ${error.message}</p>`;
         console.error(error);
       }
-    });
+    }
   </script>
 </body>
 </html>
