@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Generador de Reportes PDF</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px; }
+    .container { max-width: 400px; background: white; padding: 20px; border-radius: 8px; margin: auto; box-shadow: 0 0 8px rgba(0,0,0,0.1); }
+    label { display: block; margin-top: 15px; }
+    input, select, button { width: 100%; padding: 8px; margin-top: 5px; }
+    button { background: #0073e6; color: white; border: none; cursor: pointer; }
+    button:hover { background: #005bb5; }
+    #resultado { margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Generar Reporte PDF</h2>
+    <form id="reporteForm">
+      <label>Desde:
+        <input type="date" name="desde" required />
+      </label>
+      <label>Hasta:
+        <input type="date" name="hasta" required />
+      </label>
+      <label>Chofer:
+        <select name="chofer" required>
+          <option value="">-- Seleccionar --</option>
+          <option value="Torres Miguel">Torres Miguel</option>
+          <option value="Ruiz Walter">Ruiz Walter</option>
+          <option value="González Gerardo">González Gerardo</option>
+        </select>
+      </label>
+      <label>Empresa:
+        <select name="empresa" required>
+          <option value="">-- Seleccionar --</option>
+          <option value="LEMAN">LEMAN</option>
+          <option value="BRASSIOLO">BRASSIOLO</option>
+          <option value="CONSORCIO">CONSORCIO</option>
+        </select>
+      </label>
+      <button type="submit">Generar Reporte</button>
+    </form>
+    <div id="resultado"></div>
+  </div>
+
+  <script>
+    document.getElementById("reporteForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const params = Object.fromEntries(new FormData(e.target).entries());
+
+      try {
+        const res = await fetch("https://script.google.com/macros/s/AKfycbzViLN35lkBMYmI85Hz5O5YgOHKZDS3VZuCwSJZCmt-a_IXyLkq1bHXBhp73Wu3M3g/exec", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(params)
+        });
+
+        if (!res.ok) throw new Error("Error en la respuesta HTTP");
+
+        const data = await res.json();
+
+        if (data.error) throw new Error(data.error);
+
+        document.getElementById("resultado").innerHTML =
+          `<a href="${data.url}" target="_blank" rel="noopener noreferrer" download>📄 Descargar PDF</a>`;
+
+      } catch (error) {
+        document.getElementById("resultado").textContent =
+          "Error al generar el reporte. Revisá la consola para más detalles.";
+        console.error(error);
+      }
+    });
+  </script>
+</body>
+</html>
