@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Generador de Reportes en PDF</title>
   <style>
     body {
@@ -38,10 +38,10 @@
   <h1>Generador de Reportes</h1>
 
   <label for="desde">Desde:</label>
-  <input type="date" id="desde" required>
+  <input type="date" id="desde" required />
 
   <label for="hasta">Hasta:</label>
-  <input type="date" id="hasta" required>
+  <input type="date" id="hasta" required />
 
   <label for="chofer">Chofer:</label>
   <select id="chofer">
@@ -65,41 +65,50 @@
 
   <script>
     async function generarReporte() {
-      const desde = document.getElementById('desde').value;
-      const hasta = document.getElementById('hasta').value;
-      const chofer = document.getElementById('chofer').value;
-      const empresa = document.getElementById('empresa').value;
+      const desde = document.getElementById("desde").value;
+      const hasta = document.getElementById("hasta").value;
+      let chofer = document.getElementById("chofer").value;
+      let empresa = document.getElementById("empresa").value;
 
       if (!desde || !hasta) {
         alert("Por favor seleccioná el rango de fechas.");
         return;
       }
 
+      chofer = chofer || "";
+      empresa = empresa || "";
+
       const datos = { desde, hasta, chofer, empresa };
 
       document.getElementById("resultado").innerHTML = "Generando PDF...";
 
       try {
-        const respuesta = await fetch("https://script.google.com/macros/s/AKfycbzViLN35lkBMYmI85Hz5O5YgOHKZDS3VZuCwSJZCmt-a_IXyLkq1bHXBhp73Wu3M3g/exec", {
-          method: "POST",
-          body: JSON.stringify(datos),
-          headers: { "Content-Type": "application/json" },
-        });
+        const respuesta = await fetch(
+          "https://script.google.com/macros/s/AKfycbzViLN35lkBMYmI85Hz5O5YgOHKZDS3VZuCwSJZCmt-a_IXyLkq1bHXBhp73Wu3M3g/exec",
+          {
+            method: "POST",
+            body: JSON.stringify(datos),
+            headers: { "Content-Type": "application/json" },
+          }
+        );
 
         const resultado = await respuesta.json();
 
         if (resultado.url) {
-          document.getElementById("resultado").innerHTML = `
-            <p>Reporte generado con éxito.</p>
-            <a href="${resultado.url}" target="_blank">📄 Descargar PDF</a>
-          `;
+          document.getElementById(
+            "resultado"
+          ).innerHTML = `<p>Reporte generado con éxito.</p>
+            <a href="${resultado.url}" target="_blank">📄 Descargar PDF</a>`;
         } else {
-          document.getElementById("resultado").innerHTML = `<p>Error al generar el reporte: ${resultado.error}</p>`;
+          document.getElementById(
+            "resultado"
+          ).innerHTML = `<p>Error al generar el reporte: ${resultado.error}</p>`;
           console.error(resultado.error);
         }
-
       } catch (error) {
-        document.getElementById("resultado").innerHTML = `<p>Error inesperado: ${error.message}</p>`;
+        document.getElementById(
+          "resultado"
+        ).innerHTML = `<p>Error inesperado: ${error.message}</p>`;
         console.error(error);
       }
     }
